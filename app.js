@@ -39,7 +39,6 @@ var menu = [
     "Change current folder",
     "Create file or folder",
     "Delete file or folder",
-    // "Search in file or folder",
     "Open file",
     "Quit Program"
 ];
@@ -59,7 +58,7 @@ while (!shouldQuit) {
  * @param elementId - id of the element specified at index 0 of the element.
  * @return the index in fsStorage of the element with given id or -1 if the element has not been found.
  * */
-function findElementById(elementId){
+function findElementById(elementId) {
     var minIndex = 0;
     var maxIndex = fsStorage.length - 1;
     var currentIndex;
@@ -71,25 +70,22 @@ function findElementById(elementId){
 
         if (currentId < elementId) {
             minIndex = currentIndex + 1;
-        }
-        else if (currentId > elementId) {
+        } else if (currentId > elementId) {
             maxIndex = currentIndex - 1;
-        }
-        else {
+        } else {
             return currentIndex;
         }
     }
-
     return -1;
 }
 
-function printMenu(){
+function printMenu() {
     const selectedMenuOption = readlineSync.keyInSelect(menu, "Please make your choice",{"cancel" : false});
     return selectedMenuOption;
 }
 
-function onMenuOptionSelected(selectedMenuOption){
-    switch (selectedMenuOption){
+function onMenuOptionSelected(selectedMenuOption) {
+    switch (selectedMenuOption) {
         //Print current folder
         case 0:
             printCurrentFolder(currentFolderId);
@@ -122,13 +118,13 @@ function onMenuOptionSelected(selectedMenuOption){
 /**
  * Prints the content of the folder after sorting by type(first folders then files) and alphabetically.
  * */
-function printCurrentFolder(folderId){
+function printCurrentFolder(folderId) {
     console.log(fsStorage[findElementById(folderId)][2]);
     var folderContent = getElementsWithIndexes(getDirectoryContentIndexes(folderId));
     //sorting by folder/file and alphabetically
     var sortedFolderContent = folderContent.sort(function(a,b){
         return (a.length == b.length) ? (a[2] > b[2]) : (a.length > b.length) });
-    for(var i = 0; i < sortedFolderContent.length; i++){
+    for (var i = 0; i < sortedFolderContent.length; i++) {
         console.log("\t" + (sortedFolderContent[i])[2]);
     }
 }
@@ -137,17 +133,16 @@ function printCurrentFolder(folderId){
  * @return Array of indexes of subdirectories and files.
  * If given directoryId is an id of a file the function returns null.
  * */
-function getDirectoryContentIndexes(directoryId){
+function getDirectoryContentIndexes(directoryId) {
     var indexes = [];
-    if(isFolder(directoryId)){
-        for(var i = 1; i < fsStorage.length; i++){
-            if ((fsStorage[i])[1] == directoryId){
+    if (isFolder(directoryId)) {
+        for (var i = 1; i < fsStorage.length; i++) {
+            if ((fsStorage[i])[1] == directoryId) {
                 indexes.push(i);
             }
         }
         return indexes;
-    }
-    else{
+    } else {
         return null;
     }
 }
@@ -156,12 +151,12 @@ function getDirectoryContentIndexes(directoryId){
  * @param Array of indexes of elements in fsStorage.
  * @return Array of elements.
  * */
-function getElementsWithIndexes(indexes){
-    if(indexes == null){
+function getElementsWithIndexes(indexes) {
+    if (indexes == null) {
         return null;
     }
     var elements = [];
-    for(var i = 0; i < indexes.length; i++){
+    for (var i = 0; i < indexes.length; i++) {
         elements.push(fsStorage[indexes[i]]);
     }
     return elements;
@@ -170,16 +165,15 @@ function getElementsWithIndexes(indexes){
 /**
  * Asks to which folder to go and navigates there
  * */
-function changeCurrentFolder(){
+function changeCurrentFolder() {
     const folderName = readlineSync.question("Change folder to: ");
-    if(folderName.length == 0){
-        console.log("You didn't enter folder name.")
+    if (folderName.length == 0) {
+        console.log("You didn't enter folder name.");
         return;
     }
-    if(folderName == ".."){
+    if (folderName == "..") {
         goUp();
-    }
-    else{
+    } else {
         goDown(folderName);
     }
 }
@@ -187,7 +181,7 @@ function changeCurrentFolder(){
 /**
  * Changes current folder to one level up.
  * */
-function goUp(){
+function goUp() {
     var parentId = (fsStorage[findElementById(currentFolderId)])[1];
     currentFolderId = parentId;
     printCurrentFolder(currentFolderId);
@@ -196,16 +190,16 @@ function goUp(){
 /**
  * Changes current folder to a specified folder one level down.
  * */
-function goDown(folderName){
+function goDown(folderName) {
     const indexInFsStorage = indexOfElementByName(folderName);
-    if ( indexInFsStorage == -1){
+    if ( indexInFsStorage == -1) {
         console.log("Not found");
         return;
     }
-    if (isFolder(indexInFsStorage)){
+    if (isFolder(indexInFsStorage)) {
         currentFolderId = (fsStorage[indexInFsStorage])[0];
         printCurrentFolder(currentFolderId);
-    } else{
+    } else {
         console.log(folderName + " is not a folder");
     }
 }
@@ -213,20 +207,20 @@ function goDown(folderName){
 /**
  * Creates new file or folder.
  */
-function createFileOrFolder(){
+function createFileOrFolder() {
     const newFileOrFolderName = readlineSync.question("Please type file/folder name: ");
-    if(newFileOrFolderName.length == 0){
+    if (newFileOrFolderName.length == 0) {
         console.log("You didn't enter file/folder name.");
         return;
     }
-    if(indexOfElementByName(newFileOrFolderName) != -1){
+    if (indexOfElementByName(newFileOrFolderName) != -1) {
         console.log("Such file/folder already exists.");
         return;
     }
     const fileContent = readlineSync.question("Please write your content: ");
     const lastId = (fsStorage[fsStorage.length - 1])[0];
     var newElement = [lastId + 1, currentFolderId, newFileOrFolderName];
-    if(fileContent.length > 0){
+    if (fileContent.length > 0) {
         newElement.push(fileContent);
     }
     fsStorage.push(newElement);
@@ -238,8 +232,8 @@ function createFileOrFolder(){
  * @param name - file or folder name to search for in the current folder.
  * @return index in fsStorage. If there is no such file or folder returns -1.
  * */
-function indexOfElementByName(name){
-    for(var i = 0; i < fsStorage.length; i++){
+function indexOfElementByName(name) {
+    for (var i = 0; i < fsStorage.length; i++) {
         if ((fsStorage[i])[1] == currentFolderId && (fsStorage[i])[2] === name) {
             return i;
         }
@@ -251,30 +245,30 @@ function indexOfElementByName(name){
  * Deletes file or folder.
  * */
 function deleteFileOrFolder() {
-    const toBeDeletedName = readlineSync.question("Please type file/folder name to be deleted: ");
-    if(toBeDeletedName.length == 0){
+    const nameToBeDeleted = readlineSync.question("Please type file/folder name to be deleted: ");
+    if (nameToBeDeleted.length == 0) {
         console.log("You didn't enter file/folder name.");
         return;
     }
-    if (toBeDeletedName == "root"){
+    if (nameToBeDeleted == "root") {
         console.log("This folder can not be deleted.");
         return;
     }
-    const indexToBeDeleted = indexOfElementByName(toBeDeletedName);
-    if(indexToBeDeleted == -1){
+    const indexToBeDeleted = indexOfElementByName(nameToBeDeleted);
+    if (indexToBeDeleted == -1) {
         console.log("There is no such file/folder in the current directory.");
         return;
     }
     if (readlineSync.keyInYN("Are you sure?")) {
         // 'Y' key was pressed.
-        if(fsStorage[indexToBeDeleted].length == 3){
+        if (fsStorage[indexToBeDeleted].length == 3) {
             var allSubdirAndFiles = (findAllSubdirAndFiles(indexToBeDeleted)).sort();
-            for(var i = allSubdirAndFiles.length - 1; i >= 0; i--){
+            for (var i = allSubdirAndFiles.length - 1; i >= 0; i--) {
                 fsStorage.splice(allSubdirAndFiles[i], 1);
             }
         }
         fsStorage.splice(indexToBeDeleted,1);
-        console.log(toBeDeletedName, "was deleted.");
+        console.log(nameToBeDeleted, "was deleted.");
         printCurrentFolder(currentFolderId);
     }
 }
@@ -287,8 +281,8 @@ function deleteFileOrFolder() {
 function findAllSubdirAndFiles(indexInFsStorage) {
     var folderContent = getDirectoryContentIndexes((fsStorage[indexInFsStorage])[0]);
     var results = [].concat(folderContent);
-    for (var i = 0; i < folderContent.length; i++){
-        if(fsStorage[folderContent[i]].length == 3){
+    for (var i = 0; i < folderContent.length; i++) {
+        if (fsStorage[folderContent[i]].length == 3) {
             results = results.concat(findAllSubdirAndFiles(folderContent[i]));
         }
     }
@@ -298,22 +292,21 @@ function findAllSubdirAndFiles(indexInFsStorage) {
 /**
  * Displays file content.
  */
-function openFile(){
+function openFile() {
     const fileName = readlineSync.question("Which file to open? ");
-    if(fileName.length == 0){
+    if (fileName.length == 0) {
         "You didn't enter file name."
         return;
     }
     const indexInFsStorage = indexOfElementByName(fileName);
-    if ( indexInFsStorage == -1){
+    if ( indexInFsStorage == -1) {
         console.log("Not found");
         return;
     }
-    if (!isFolder(fsStorage[indexInFsStorage][0])){
+    if (!isFolder(fsStorage[indexInFsStorage][0])) {
         var hasContent = (fsStorage[indexInFsStorage])[3] != null;
         console.log((fsStorage[indexInFsStorage])[2], hasContent ? ("\n\t" + (fsStorage[indexInFsStorage])[3]) : " is empty");
-    }
-    else{
+    } else {
         console.log(fileName, "is not a file");
     }
 }
@@ -327,8 +320,7 @@ function quitProgram() {
         try {
             var data = JSON.stringify(fsStorage);
             fs.writeFileSync(dataFileName, data, {encoding: "utf8"});
-        }
-        catch(err) {
+        } catch(err) {
             console.log("Error occurred while saving the data", err.code);
         }
         shouldQuit = true;
@@ -342,11 +334,10 @@ function quitProgram() {
  * Checks that the element is a folder.
  * Returns true if it is a folder and false if it is a file
  * */
-function isFolder(id){
-    if(fsStorage[findElementById(id)].length == 3){
+function isFolder(id) {
+    if (fsStorage[findElementById(id)].length == 3) {
         return true;
-    }
-    else{
+    } else {
         return false;
     }
 }
