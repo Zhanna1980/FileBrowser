@@ -167,8 +167,7 @@ function getElementsWithIndexes(indexes) {
  * */
 function changeCurrentFolder() {
     const folderName = readlineSync.question("Change folder to: ");
-    if (folderName.length == 0) {
-        console.log("You didn't enter folder name.");
+    if (beenEnteredEmptyName(folderName)) {
         return;
     }
     if (folderName == "..") {
@@ -196,8 +195,9 @@ function goDown(folderName) {
         console.log("Not found");
         return;
     }
-    if (isFolder(indexInFsStorage)) {
-        currentFolderId = (fsStorage[indexInFsStorage])[0];
+    const folderId = (fsStorage[indexInFsStorage])[0];
+    if (isFolder(folderId)) {
+        currentFolderId = folderId;
         printCurrentFolder(currentFolderId);
     } else {
         console.log(folderName + " is not a folder");
@@ -209,8 +209,7 @@ function goDown(folderName) {
  */
 function createFileOrFolder() {
     const newFileOrFolderName = readlineSync.question("Please type file/folder name: ");
-    if (newFileOrFolderName.length == 0) {
-        console.log("You didn't enter file/folder name.");
+    if (beenEnteredEmptyName(newFileOrFolderName)) {
         return;
     }
     if (indexOfElementByName(newFileOrFolderName) != -1) {
@@ -246,8 +245,7 @@ function indexOfElementByName(name) {
  * */
 function deleteFileOrFolder() {
     const nameToBeDeleted = readlineSync.question("Please type file/folder name to be deleted: ");
-    if (nameToBeDeleted.length == 0) {
-        console.log("You didn't enter file/folder name.");
+    if (beenEnteredEmptyName(nameToBeDeleted)) {
         return;
     }
     if (nameToBeDeleted == "root") {
@@ -294,8 +292,7 @@ function findAllSubdirAndFiles(indexInFsStorage) {
  */
 function openFile() {
     const fileName = readlineSync.question("Which file to open? ");
-    if (fileName.length == 0) {
-        "You didn't enter file name."
+    if (beenEnteredEmptyName(fileName)) {
         return;
     }
     const indexInFsStorage = indexOfElementByName(fileName);
@@ -339,6 +336,19 @@ function isFolder(id) {
         return true;
     } else {
         return false;
+    }
+}
+
+/**
+ * Checks the length of the string, representing file/folder name and prints in the console if it is empty.
+ * @return true if the string empty or false otherwise.
+ * */
+function beenEnteredEmptyName(name) {
+    if (name.length == 0) {
+        console.log("You didn't enter name.");
+        return true;
+    } else {
+        return false
     }
 }
 
