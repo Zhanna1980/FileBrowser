@@ -4,37 +4,8 @@
 
 const readlineSync = require("readline-sync");
 const fs = require("fs");
-
 const dataFileName = "data.json";
-
-var shouldQuit = false;
-var currentFolderId = 0;
-var fsStorage = [];
-
-try {
-    var dataJson = fs.readFileSync(dataFileName, {encoding: "utf8"});
-    fsStorage = JSON.parse(dataJson);
-}
-catch(err) {
-
-    // fill some initial data
-    fsStorage = [
-        //[id, parentId, name, content == null]
-        [0, 0, "root"],
-        [1, 0, "subfolder1"],
-        [2, 0, "subfolder2"],
-        [3, 0, "subfolder3"],
-        [4, 1, "subfolder4"],
-        [5, 4, "subfolder5"],
-        [6, 5, "file1", "content1"],
-        [7, 5, "file2", "content2"],
-        [8, 0, "file3", "content3"],
-        [9, 0, "a-subfolder6"],
-        [10, 0, "b-subfolder6"]
-    ];
-}
-
-var menu = [
+const menu = [
     "Print current folder",
     "Change current folder",
     "Create file or folder",
@@ -43,14 +14,43 @@ var menu = [
     "Quit Program"
 ];
 
-printCurrentFolder(0);
+var shouldQuit = false;
+var currentFolderId = 0;
+var fsStorage = [];
 
-/**
- * app's loop
- * */
-while (!shouldQuit) {
-    const selectedMenuOption = printMenu();
-    onMenuOptionSelected(selectedMenuOption);
+startApp();
+
+function startApp() {
+    loadData();
+    printCurrentFolder(0);
+    //app's loop:
+    while (!shouldQuit) {
+        const selectedMenuOption = printMenu();
+        onMenuOptionSelected(selectedMenuOption);
+    }
+}
+
+function loadData() {
+    try {
+        var dataJson = fs.readFileSync(dataFileName, {encoding: "utf8"});
+        fsStorage = JSON.parse(dataJson);
+    } catch (err) {
+        // fill some initial data
+        fsStorage = [
+            //[id, parentId, name, content == null]
+            [0, 0, "root"],
+            [1, 0, "subfolder1"],
+            [2, 0, "subfolder2"],
+            [3, 0, "subfolder3"],
+            [4, 1, "subfolder4"],
+            [5, 4, "subfolder5"],
+            [6, 5, "file1", "content1"],
+            [7, 5, "file2", "content2"],
+            [8, 0, "file3", "content3"],
+            [9, 0, "a-subfolder6"],
+            [10, 0, "b-subfolder6"]
+        ];
+    }
 }
 
 /**
