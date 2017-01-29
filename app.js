@@ -22,7 +22,7 @@ startApp();
 
 function startApp() {
     loadData();
-    printCurrentFolder(0);
+    printFolderContent(0);
     //app's loop:
     while (!shouldQuit) {
         const selectedMenuOption = printMenu();
@@ -30,6 +30,9 @@ function startApp() {
     }
 }
 
+/**
+ * Loads saved data from file or if there is no such file assigns default value for fsStorage
+ * */
 function loadData() {
     try {
         var dataJson = fs.readFileSync(dataFileName, {encoding: "utf8"});
@@ -79,16 +82,22 @@ function findElementById(elementId) {
     return -1;
 }
 
+/**
+ * Prints user menu
+ * */
 function printMenu() {
     const selectedMenuOption = readlineSync.keyInSelect(menu, "Please make your choice",{"cancel" : false});
     return selectedMenuOption;
 }
 
+/**
+ * Handles user's selection in menu
+ * */
 function onMenuOptionSelected(selectedMenuOption) {
     switch (selectedMenuOption) {
         //Print current folder
         case 0:
-            printCurrentFolder(currentFolderId);
+            printFolderContent(currentFolderId);
             break;
         //Change current folder
         case 1:
@@ -117,10 +126,11 @@ function onMenuOptionSelected(selectedMenuOption) {
 
 /**
  * Prints the content of the folder after sorting by type(first folders then files) and alphabetically.
+ * @param folderId - the id of the folder which will be printed
  * */
-function printCurrentFolder(folderId) {
+function printFolderContent(folderId) {
     console.log(fsStorage[findElementById(folderId)][2]);
-    var folderContent = getElementsWithIndexes(getDirectoryContentIndexes(folderId));
+    var folderContent = getElementsByIndexes(getDirectoryContentIndexes(folderId));
     //sorting by folder/file and alphabetically
     var sortedFolderContent = folderContent.sort(function(a,b){
         return (a.length == b.length) ? (a[2] > b[2]) : (a.length > b.length) });
@@ -130,6 +140,8 @@ function printCurrentFolder(folderId) {
 }
 
 /**
+ * Gets the indexes of all subfolders and files in the given directory
+ * @param directoryId - the id of the directory (folder)
  * @return Array of indexes of subdirectories and files.
  * If given directoryId is an id of a file the function returns null.
  * */
@@ -148,10 +160,11 @@ function getDirectoryContentIndexes(directoryId) {
 }
 
 /**
+ * Gets elements by their indexes
  * @param Array of indexes of elements in fsStorage.
  * @return Array of elements.
  * */
-function getElementsWithIndexes(indexes) {
+function getElementsByIndexes(indexes) {
     if (indexes == null) {
         return null;
     }
@@ -167,7 +180,7 @@ function getElementsWithIndexes(indexes) {
  * */
 function changeCurrentFolder() {
     const folderName = readlineSync.question("Change folder to: ");
-    if (beenEnteredEmptyName(folderName)) {
+    if (isNameEmpty(folderName)) {
         return;
     }
     if (folderName == "..") {
@@ -183,11 +196,12 @@ function changeCurrentFolder() {
 function goUp() {
     var parentId = (fsStorage[findElementById(currentFolderId)])[1];
     currentFolderId = parentId;
-    printCurrentFolder(currentFolderId);
+    printFolderContent(currentFolderId);
 }
 
 /**
  * Changes current folder to a specified folder one level down.
+ * @param folderName - the name (string) of the folder
  * */
 function goDown(folderName) {
     const indexInFsStorage = indexOfElementByName(folderName);
@@ -198,7 +212,7 @@ function goDown(folderName) {
     const folderId = (fsStorage[indexInFsStorage])[0];
     if (isFolder(folderId)) {
         currentFolderId = folderId;
-        printCurrentFolder(currentFolderId);
+        printFolderContent(currentFolderId);
     } else {
         console.log(folderName + " is not a folder");
     }
@@ -209,7 +223,7 @@ function goDown(folderName) {
  */
 function createFileOrFolder() {
     const newFileOrFolderName = readlineSync.question("Please type file/folder name: ");
-    if (beenEnteredEmptyName(newFileOrFolderName)) {
+    if (isNameEmpty(newFileOrFolderName)) {
         return;
     }
     if (indexOfElementByName(newFileOrFolderName) != -1) {
@@ -223,11 +237,11 @@ function createFileOrFolder() {
         newElement.push(fileContent);
     }
     fsStorage.push(newElement);
-    printCurrentFolder(currentFolderId);
+    printFolderContent(currentFolderId);
 }
 
 /**
- * Checks if current folder contains file or folder with a specified name.
+ * Checks if current folder contains file or folder with a specified name and returns its index.
  * @param name - file or folder name to search for in the current folder.
  * @return index in fsStorage. If there is no such file or folder returns -1.
  * */
@@ -245,7 +259,7 @@ function indexOfElementByName(name) {
  * */
 function deleteFileOrFolder() {
     const nameToBeDeleted = readlineSync.question("Please type file/folder name to be deleted: ");
-    if (beenEnteredEmptyName(nameToBeDeleted)) {
+    if (isNameEmpty(nameToBeDeleted)) {
         return;
     }
     if (nameToBeDeleted == "root") {
@@ -267,7 +281,7 @@ function deleteFileOrFolder() {
         }
         fsStorage.splice(indexToBeDeleted,1);
         console.log(nameToBeDeleted, "was deleted.");
-        printCurrentFolder(currentFolderId);
+        printFolderContent(currentFolderId);
     }
 }
 
@@ -292,7 +306,7 @@ function findAllSubdirAndFiles(indexInFsStorage) {
  */
 function openFile() {
     const fileName = readlineSync.question("Which file to open? ");
-    if (beenEnteredEmptyName(fileName)) {
+    if (isNameEmpty(fileName)) {
         return;
     }
     const indexInFsStorage = indexOfElementByName(fileName);
@@ -321,7 +335,6 @@ function quitProgram() {
             console.log("Error occurred while saving the data", err.code);
         }
         shouldQuit = true;
-        process.exit(0);
     } else {
         return;
     }
@@ -329,7 +342,8 @@ function quitProgram() {
 
 /**
  * Checks that the element is a folder.
- * Returns true if it is a folder and false if it is a file
+ * @param id - the id of the element
+ * @return true if it is a folder and false if it is a file
  * */
 function isFolder(id) {
     if (fsStorage[findElementById(id)].length == 3) {
@@ -341,14 +355,15 @@ function isFolder(id) {
 
 /**
  * Checks the length of the string, representing file/folder name and prints in the console if it is empty.
+ * @param name - string to check
  * @return true if the string empty or false otherwise.
  * */
-function beenEnteredEmptyName(name) {
+function isNameEmpty(name) {
     if (name.length == 0) {
         console.log("You didn't enter name.");
         return true;
     } else {
-        return false
+        return false;
     }
 }
 
